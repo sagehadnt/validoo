@@ -6,14 +6,20 @@ To validate an object, chain a call to `validate()` and then list the validation
 (a lambda to confirm the requirement is met).
 
 ```kotlin
-val company = companyRepo.get(companyId)
+val company = companyRepo.get(companyId).validate {
+    "must be active" { isActive }
+}()
 val product = productRepo.get(productId).validate {
-    "must be accessible to company" { isAccessibleTo(company) }
-    "must not have already been bought" { this !in company.purchases }
+    "must be accessible to company $company" { isAccessibleTo(company) }
+    "must not have already been bought by $company" { this !in company.purchases }
 }()
 ```
 If all requirements are satisfied, the expression returns the original object. If any requirements are not met, an error is thrown containing a tree of
-all errors and nested errors.
+all errors and nested errors:
+```
+java.lang.IllegalStateException: Product1 failed 1 validation checks: 
+ - must be accessible to company Company1
+```
 
 ### Technical Details
 - Inside the validation DSL, we override `String.invoke()`, allowing us to pass a the condition lambda to the requirement string as a function call.
@@ -30,7 +36,14 @@ val company = companyRepo.get(companyId).validate {
     // ... other company validation checks go here ...
 }()
 ```
-If any of the collection elements fail their validation, the overall validation fails.
+If any of the collection elements fail their validation, the overall validation fails. The nested errors are contained in a tree, allowing for clear error messages:
+
+```
+java.lang.IllegalStateException: Company1 failed 1 validation checks: 
+ - 1 members of collection 'employees' failed validation:
+   - [0] EmployeeWithNameTooLongFor32Characters
+     - name must contain at most 32 characters
+```
 
 ## Validation Results
 `validate` returns a raw `ValidationResult` object, which can either be `Success` or `Failure`. There are three options to convert this into something useful:
