@@ -100,11 +100,13 @@ sealed interface ValidationResult<T> {
     operator fun invoke(): T
     val reasons: Set<FailureReason<T>>
     fun orNull(): T?
+    fun wasSuccessful(): Boolean
 
     class Success<T>(val result: T) : ValidationResult<T> {
         override fun invoke(): T = result
         override val reasons = emptySet<FailureReason<T>>()
         override fun orNull(): T? = result
+        override fun wasSuccessful() = true
     }
 
     class Failure<T>(val source: T, override val reasons: Set<FailureReason<T>>) : ValidationResult<T> {
@@ -116,6 +118,7 @@ sealed interface ValidationResult<T> {
 
         override fun invoke(): T = error(errorMsg)
         override fun orNull(): T? = null
+        override fun wasSuccessful() = false
     }
 }
 

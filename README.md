@@ -37,3 +37,4 @@ If any of the collection elements fail their validation, the overall validation 
 1. `invoke` the object using `()`. For a Success, this will give you the validated value. For a Failure, this will error with a result tree containing all failed requirements.
 2. Call `orNull()`, unpacking the Success into the validated value, or the Failure into a null.
 3. Add a custom handler to convert the result into an error handling mechanism of your choice.
+4. Call `wasSuccessful()` if you only care about the validation and don't need the underlying object or failure reasons. This will convert the result into true (Success) or false (Failure).
